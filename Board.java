@@ -89,28 +89,64 @@ public class Board {
 	//We can use arraylists here because they are iterable
 	public Iterable<Board> neighbors(){
 		ArrayList<Board>  neighbors = new ArrayList<Board>();
-		/*
-		if (firstRow != 0 && firstRow != dimension - 1 && firstCol != 0 && firstCol != dimension - 1) {		//not on edge
-			
-		} else if(firstRow == 0 && firstCol == 0) {		//top left corner
-			
-		} else if(firstRow == dimension - 1 && firstCol == 0) {		//top right corner
-			
-		} else if(firstRow == 0 && firstCol == dimension - 1) {		//bottom left corner
-			
-		} else if(firstRow == dimension - 1 && firstCol == dimension - 1) {		//bottom right corner
-			
-		} else if(firstRow == 0) {		//left side
-			
-		} else if(firstRow == dimension - 1) {		//right side
-			
-		} else if(firstCol == 0) {		//top
-			
-		} else if(firstCol == dimension - 1) {		//bottom
+		int emptyRow = -1;
+		int emptyCol = -1;
+		
+		for (int i = 0; i < dimension && emptyRow != -1; i++) {
+			for (int j = 0; j < dimension; j++) {
+				if(tiles[i][j] == 0) {
+					emptyRow = i;
+					emptyCol = j;
+					break;
+				}
+			}
 			
 		}
-		*/
-		//TODO add all the neighbors to neighbors list
+		
+		
+		if (emptyRow != 0 && emptyRow != dimension - 1 && emptyCol != 0 && emptyCol != dimension - 1) {		//not on edge
+			neighbors.add(swap(tiles, "right", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "left", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "up", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "down", emptyRow, emptyCol));
+			
+		} else if(emptyRow == 0 && emptyCol == 0) {		//top left corner
+			neighbors.add(swap(tiles, "right", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "down", emptyRow, emptyCol));
+
+		} else if(emptyCol == dimension - 1 && emptyRow == 0) {		//top right corner
+			neighbors.add(swap(tiles, "left", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "down", emptyRow, emptyCol));
+			
+		} else if(emptyCol == 0 && emptyRow == dimension - 1) {		//bottom left corner
+			neighbors.add(swap(tiles, "right", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "up", emptyRow, emptyCol));
+
+		} else if(emptyRow == dimension - 1 && emptyCol == dimension - 1) {		//bottom right corner
+			neighbors.add(swap(tiles, "left", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "up", emptyRow, emptyCol));
+
+		} else if(emptyCol == 0) {		//left side
+			neighbors.add(swap(tiles, "right", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "up", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "down", emptyRow, emptyCol));
+
+		} else if(emptyCol == dimension - 1) {		//right side
+			neighbors.add(swap(tiles, "left", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "up", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "down", emptyRow, emptyCol));
+			
+		} else if(emptyRow == 0) {		//top
+			neighbors.add(swap(tiles, "right", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "left", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "down", emptyRow, emptyCol));
+			
+		} else if(emptyRow == dimension - 1) {		//bottom
+			neighbors.add(swap(tiles, "right", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "left", emptyRow, emptyCol));
+			neighbors.add(swap(tiles, "up", emptyRow, emptyCol));
+		}
+		
 		return neighbors;
 	}
 	
@@ -121,7 +157,8 @@ public class Board {
 				newTiles[i][j] = tiles[i][j];
 			}
 		}
-		Random rng = new Random();
+		
+		//Pick 2 adjacent, non-zero tiles
 		int firstRow = 0;
 		int firstCol;
 		if(newTiles[0][0] != 0) {
@@ -138,8 +175,12 @@ public class Board {
 			secondRow = firstRow + 1;
 			secondCol = firstCol;
 		}
-		//TODO swap first and second elements in the newTiles array
 		
+		
+		//Swap them
+		int temp = newTiles[firstRow][firstCol];
+		newTiles[firstRow][firstCol] = newTiles[secondRow][secondCol];
+		newTiles[secondRow][secondCol] = temp;
 	
 		
 		
@@ -147,7 +188,52 @@ public class Board {
 		
 	}
 	
-	public static void main(String[] args) {
+	private Board swap(int[][] tiles, String direction, int blankRow, int blankCol) {
 		
+		int temp;
+		int[][] newTiles = new int[dimension][dimension];
+		for(int i = 0; i < dimension; i++) {
+			for(int j = 0; j < dimension; j++) {
+				newTiles[i][j] = tiles[i][j];
+			}
+		}
+		if (direction.equals("right")) {
+			temp = newTiles[blankRow][blankCol + 1];
+			newTiles[blankRow][blankCol] = temp;
+			newTiles[blankRow][blankCol + 1] = 0;
+		} else if (direction.equals("left")) {
+			temp = newTiles[blankRow][blankCol - 1];
+			newTiles[blankRow][blankCol] = temp;
+			newTiles[blankRow][blankCol - 1] = 0;
+		} else if (direction.equals("up")) {
+			temp = newTiles[blankRow - 1][blankCol];
+			newTiles[blankRow][blankCol] = temp;
+			newTiles[blankRow - 1][blankCol] = 0;
+		} else if (direction.equals("down")) {
+			temp = newTiles[blankRow + 1][blankCol];
+			newTiles[blankRow][blankCol] = temp;
+			newTiles[blankRow + 1][blankCol] = 0;
+		} else {
+			throw new IllegalArgumentException("Invalid direction");
+		}
+		
+		return (new Board(newTiles));
+	}
+	
+	
+	public static void main(String[] args) {
+		int counter = 0;
+		int[][] tiles = new int[3][3];
+		for (int i = 0; i < 3; i++) {
+			for(int j = 0; j < 3; j++) {
+				tiles[i][j] = counter++;
+			}
+		}
+		
+		Board board = new Board(tiles);
+		System.out.println(board);
+		System.out.println("The Manhattan distance is " + board.manhattan());
+		System.out.println("The hamming distance is " + board.hamming());
+
 	}
 }
