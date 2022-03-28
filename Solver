@@ -1,0 +1,98 @@
+import java.util.ArrayList;
+
+public class Solver {
+	MinPQ<Node> PQ;
+	MinPQ<Node> swappedPQ;
+	Node currentNode;
+	Node swappedCurrentNode;
+	ArrayList<Board> solution;
+	
+	//find a solution to the initial board (using the A* algorithm)
+	public Solver(Board initial) {
+		ArrayList<Board> solution = new ArrayList<Board>();
+		PQ = new MinPQ<Node>(10);
+		swappedPQ = new MinPQ<Node>(10);
+		PQ.insert(new Node(initial, 0, null));
+		swappedPQ.insert(new Node(initial.twin(), 0, null));
+
+
+		while(!(currentNode.board.isGoal() || swappedCurrentNode.board.isGoal())) {
+			currentNode = PQ.delMin();
+			for(Board b : currentNode.board.neighbors()) {
+				if (!b.equals(currentNode.prev.board)) {
+					PQ.insert(new Node(b, currentNode.movesDeep + 1, currentNode));
+				}
+			}
+			swappedCurrentNode = swappedPQ.delMin();
+			for(Board b : swappedCurrentNode.board.neighbors()) {
+				if (!b.equals(swappedCurrentNode.prev.board)) {
+					swappedPQ.insert(new Node(b, swappedCurrentNode.movesDeep + 1, swappedCurrentNode));
+				}
+			}
+			solution.add(currentNode.board);
+		}
+		
+		
+	}
+	
+	//is the initial board solvable?(see below)
+	public boolean isSolvable() {
+		return(currentNode.board.isGoal());
+	}
+	
+	//min number of moves to solve the initial board; -1 if unsolvable
+	public int moves() {
+		if(!isSolvable()) {
+			return -1;
+		}
+		return currentNode.movesDeep;
+	}
+	
+	//sequence of boards in a shortest solution; null if unsolvable
+	public Iterable<Board> solution(){
+		if(!isSolvable()) {
+			return null;
+		}
+		return solution;
+	}
+	
+	
+	private class Node implements Comparable <Node>{
+		Board board;
+		int movesDeep;
+		Node prev;
+		
+		public Node(Board b, int moves, Node p){
+			board = b;
+			movesDeep = moves;
+			prev = p;
+		}
+		
+		public int manhattanPriority() {
+			return(this.board.manhattan() + movesDeep);
+		}
+		
+		public int hammingPriority() {
+			return(this.board.hamming() + movesDeep);
+		}
+		
+		@Override
+		public int compareTo(Solver.Node other) {
+			if(this.manhattanPriority() > other.manhattanPriority()) {
+				return 1;
+			}
+			if(this.manhattanPriority() < other.manhattanPriority()) {
+				return -1;
+			}
+			return 0;
+			
+		}
+	}
+	
+	//test client(see below)
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}
