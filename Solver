@@ -15,9 +15,9 @@ public class Solver {
 		PQ.insert(new Node(initial, 0, null));
 		swappedPQ.insert(new Node(initial.twin(), 0, null));
 
-
+		currentNode = PQ.delMin();
 		while(!(currentNode.board.isGoal() || swappedCurrentNode.board.isGoal())) {
-			currentNode = PQ.delMin();
+			
 			for(Board b : currentNode.board.neighbors()) {
 				if (!b.equals(currentNode.prev.board)) {
 					PQ.insert(new Node(b, currentNode.movesDeep + 1, currentNode));
@@ -29,8 +29,18 @@ public class Solver {
 					swappedPQ.insert(new Node(b, swappedCurrentNode.movesDeep + 1, swappedCurrentNode));
 				}
 			}
-			solution.add(currentNode.board);
+			currentNode = PQ.delMin();
 		}
+		
+		if(isSolvable()) {
+			solution.add(currentNode.board);
+			while(!currentNode.board.equals(initial)) {
+				currentNode = currentNode.prev;
+				solution.add(solution.size(), currentNode.board);
+			}
+		}
+		
+		
 		
 		
 	}
