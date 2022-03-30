@@ -6,39 +6,58 @@ public class Solver {
 	Node currentNode;
 	Node swappedCurrentNode;
 	ArrayList<Board> solution;
+	ArrayList<Board> previouslyChecked;
+	ArrayList<Board> previouslyCheckedSwapped;
+	boolean solved;
 	
 	//find a solution to the initial board (using the A* algorithm)
 	public Solver(Board initial) {
-		ArrayList<Board> solution = new ArrayList<Board>();
+		solution = new ArrayList<Board>();
+		previouslyChecked = new ArrayList<Board>();
+		previouslyCheckedSwapped = new ArrayList<Board>();
 		PQ = new MinPQ<Node>(10);
 		swappedPQ = new MinPQ<Node>(10);
 		PQ.insert(new Node(initial, 0, null));
 		swappedPQ.insert(new Node(initial.twin(), 0, null));
-
+		solved = false;
+		
 		currentNode = PQ.delMin();
+		swappedCurrentNode = swappedPQ.delMin();
 		while(!(currentNode.board.isGoal() || swappedCurrentNode.board.isGoal())) {
-			
+			previouslyChecked.add(currentNode.board);
+			previouslyCheckedSwapped.add(swappedCurrentNode.board);
 			for(Board b : currentNode.board.neighbors()) {
-				if (!b.equals(currentNode.prev.board)) {
-					PQ.insert(new Node(b, currentNode.movesDeep + 1, currentNode));
+				for(Board toCheck : previouslyChecked) {
+					if(!b.equals(toCheck)) {
+						if (currentNode.prev == null || !b.equals(currentNode.prev.board)) {
+							PQ.insert(new Node(b, currentNode.movesDeep + 1, currentNode));
+						}
+					}
 				}
+				
 			}
-			swappedCurrentNode = swappedPQ.delMin();
 			for(Board b : swappedCurrentNode.board.neighbors()) {
-				if (!b.equals(swappedCurrentNode.prev.board)) {
-					swappedPQ.insert(new Node(b, swappedCurrentNode.movesDeep + 1, swappedCurrentNode));
+				for(Board toCheck : previouslyCheckedSwapped) {
+					if(!b.equals(toCheck)) {
+						if (swappedCurrentNode.prev == null || !b.equals(swappedCurrentNode.prev.board)) {
+							swappedPQ.insert(new Node(b, swappedCurrentNode.movesDeep + 1, swappedCurrentNode));
+						}
+					}
 				}
 			}
 			currentNode = PQ.delMin();
+			swappedCurrentNode = swappedPQ.delMin();
+		
 		}
 		
-		if(isSolvable()) {
+		if(currentNode.board.isGoal()) {
+			solved = true;
 			solution.add(currentNode.board);
 			while(!currentNode.board.equals(initial)) {
 				currentNode = currentNode.prev;
-				solution.add(solution.size(), currentNode.board);
+				solution.add(0, currentNode.board);
 			}
-		}
+		} 
 		
 		
 		
@@ -47,7 +66,7 @@ public class Solver {
 	
 	//is the initial board solvable?(see below)
 	public boolean isSolvable() {
-		return(currentNode.board.isGoal());
+		return(solved);
 	}
 	
 	//min number of moves to solve the initial board; -1 if unsolvable
@@ -101,7 +120,29 @@ public class Solver {
 	
 	//test client(see below)
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		int counter = 0;
+		int[][] tiles = new int[3][3];
+		
+		tiles[0][0] = 4;
+		tiles[0][1] = 1;
+		tiles[0][2] = 2;
+		tiles[1][0] = 0;
+		tiles[1][1] = 5;
+		tiles[1][2] = 3;
+		tiles[2][0] = 7;
+		tiles[2][1] = 8;
+		tiles[2][2] = 6;
+		
+		Board board = new Board(tiles);
+		Solver solver = new Solver(board);
+		if(solver.isSolvable()) {
+			for(Board b : solver.solution()) {
+				System.out.println(b);
+			}
+		} else {
+			System.out.println("That board is not solvable!");
+		}
+		
 
 	}
 
