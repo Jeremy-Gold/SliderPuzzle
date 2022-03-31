@@ -24,27 +24,35 @@ public class Solver {
 		currentNode = PQ.delMin();
 		swappedCurrentNode = swappedPQ.delMin();
 		while(!(currentNode.board.isGoal() || swappedCurrentNode.board.isGoal())) {
-			previouslyChecked.add(currentNode.board);
-			previouslyCheckedSwapped.add(swappedCurrentNode.board);
+			
 			for(Board b : currentNode.board.neighbors()) {
-				for(Board toCheck : previouslyChecked) {
-					if(!b.equals(toCheck)) {
-						if (currentNode.prev == null || !b.equals(currentNode.prev.board)) {
-							PQ.insert(new Node(b, currentNode.movesDeep + 1, currentNode));
-						}
+				boolean alreadySeen = false; 
+				for(Board checked : previouslyChecked) {
+					if(!b.equals(checked)) {
+						alreadySeen = true;
+						 break;
 					}
 				}
+				if (!alreadySeen && (currentNode.prev == null || !b.equals(currentNode.prev.board))) {
+						PQ.insert(new Node(b, currentNode.movesDeep + 1, currentNode));
+				}
+				
 				
 			}
 			for(Board b : swappedCurrentNode.board.neighbors()) {
-				for(Board toCheck : previouslyCheckedSwapped) {
-					if(!b.equals(toCheck)) {
-						if (swappedCurrentNode.prev == null || !b.equals(swappedCurrentNode.prev.board)) {
-							swappedPQ.insert(new Node(b, swappedCurrentNode.movesDeep + 1, swappedCurrentNode));
-						}
+				boolean alreadySeen = false; 
+				for(Board checked : previouslyCheckedSwapped) {
+					if(!b.equals(checked)) {
+						alreadySeen = true;
+						 break;
 					}
 				}
+				if (!alreadySeen && (swappedCurrentNode.prev == null || !b.equals(swappedCurrentNode.prev.board))) {
+					swappedPQ.insert(new Node(b, swappedCurrentNode.movesDeep + 1, swappedCurrentNode));
+				}
 			}
+			previouslyChecked.add(currentNode.board);
+			previouslyCheckedSwapped.add(swappedCurrentNode.board);
 			currentNode = PQ.delMin();
 			swappedCurrentNode = swappedPQ.delMin();
 		
